@@ -20,11 +20,17 @@
 )
 
 ;; constructs all operations from floor to floor
+;(defun make-elevator-ops (top) 
+;  (loop for i in (reverse (range 1 top)) do 
+;    (push (make-elevator-op i (+ i 1)) *elevatorOps*)
+;    (push (make-elevator-op (+ i 1) i) *elevatorOps*))
+;)
+
 (defun make-elevator-ops (top) 
-  (loop for i in (reverse (range 1 top)) do 
-    (push (make-elevator-op i (+ i 1)) *elevatorOps*)
-    (push (make-elevator-op (+ i 1) i) *elevatorOps*))
-)
+  (loop for i in (reverse (range 1 (+ top 1))) do
+	(loop for j in (reverse (range 1 (+ 1 top))) do
+	      (if (not (= i j)) 
+		(push (make-elevator-op i j) *elevatorOps*)))))
 
 ;; helper for the above function
 (defun make-elevator-op (a b) 
