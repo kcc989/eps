@@ -7,9 +7,10 @@
 ;;; === GLOBALS ===
 
 (defparameter *elevatorOps* '()) ;; list of elevator ops
-(defparameter *floors* 20) ;; desired number of floors
+(defparameter *floors* 19) ;; desired number of floors
 (defparameter *optimizedGoals* '()) ;; for pre-processing
-(defparameter *upp* t) ;;predicate for the direction
+(defparameter *upp* t)
+
 
 ;;; ==== CODE FOR ELEVATOR SIMULATION ====
 
@@ -131,18 +132,6 @@
 
 ;; toggle direction ops
 
-(push (op '(go-up)
-               :preconds '((going-down))
-               :add-list '((going-up))
-               :del-list '((going-down)))
-      *elevatorOps*)
-
-(push (op '(go-down)
-               :preconds '((going-up))
-               :add-list '((going-down))
-	       :del-list '((going-up)))
-      *elevatorOps*)
-
 ;---------------PRE-PROCESSING FUNCTIONS -----------------------
 
 (defun get-pickups (lst)
@@ -199,9 +188,6 @@
 )
       
 (defun get-floors (lst)
-  (cond 
-   ((equal (car lst) 'going-up) (setq *upp* t))
-   ((equal (car lst) 'going-down) (setq *upp* nil)))
    
   (if (equal (car lst) 'person-on)
       (cons (second lst) (cons (fourth lst) nil))
@@ -269,13 +255,15 @@
 
 ;(display (get-ups '((1 5) (3 4) (5 7) (8 4))))
 
-(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 5) (door-closed) (on 1) (person-on 16 wants 1) (going-up)))
+(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 5) (door-closed) (on 1) (person-on 16 wants 1)))
 
 (debug2 :gps)
 
+
+;(print (gps '((person-on 3 wants 1) (person-on 5 wants 2)(door-closed)(on 6)) '((person-aboard-wants 2)(person-aboard-wants 1)(person-delivered-to 2)(door-closed))  *elevatorOps*))
 (let ((x (fix-goals (cons parms '((blah blah))))))
 (display x)
-(display (gps (first x) (second x))))
+(display (gps (first x) (second x) *elevatorOps*)))
 
 
 
