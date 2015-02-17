@@ -212,7 +212,7 @@
   (display lstup-off)
   (display lstdown-on)
   (display lstdown-off)
-  (display (merge-lists lstup-on lstup-off lstdown-on lstdown-off))
+  (merge-lists lstup-on lstup-off lstdown-on lstdown-off)
 )
 
 (defun fix-goals (lst) ;re-write goals base on pre conditions
@@ -223,12 +223,9 @@
 	    (cond 
 	     ((not (equal part nil))(push part result))))))
 
-  ;(let ((ups (get-ups result)) (downs (get-downs result)))
+(list (car lst)
   (generate-goals (sort-by-car-up (get-ups result)) (sort-by-second-up (get-ups result)) (sort-by-car-down 
-(get-downs result)) (sort-by-second-down (get-downs result)))
-    ;(display (sort-by-car-up ups)))
-)
-;(generate-best result )
+(get-downs result)) (sort-by-second-down (get-downs result)))))
 
 ;; TESTING HARNESS -------------------------
 
@@ -272,8 +269,15 @@
 
 ;(display (get-ups '((1 5) (3 4) (5 7) (8 4))))
 
-(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 5) (door-closed) (on 1) (person-on 16 wants 1) (going-down)))
-(fix-goals (cons parms '((blah blah))))
+(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 5) (door-closed) (on 1) (person-on 16 wants 1) (going-up)))
+
+(debug2 :gps)
+
+(let ((x (fix-goals (cons parms '((blah blah))))))
+(display x)
+(display (gps (first x) (second x))))
+
+
 
 
 ;(display (sort-by-car-up '((1 2) (3 4) (2 3))))
