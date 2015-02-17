@@ -65,6 +65,37 @@
 (defun make-off-ops-h (floor-want)
   (push (make-get-off-op floor-want) *elevatorOps*))
 
+;; pickup `(person-aboard-wants ,floor)
+;; drop off `(person-delivered-to ,floor)
+
+
+;;;
+;;; CASEY's MERGE LISTS AREA!!!!!!!
+;;;
+(defun merge-ups (pick drop goals)
+  (cond
+   ((equal (null pick) (null drop)) goals)
+   ((null pick) (merge-ups pick (rest drop) (push `(person-aboard-wants ,(cadar pick)) goals)))
+   ((null drop) (merge-ups (rest pick) drop (push `(person-delivered-to ,(cadar drop)) goals)))
+   ((< (first (first pick)) (second (first drop))) (merge-ups (rest pick) drop (push `(person-delivered-to ,(cadar drop)) goals)))
+   (t ((merge-ups pick (rest drop) (push `(person-aboard-wants ,(cadar pick)) goals))))))
+
+(defun merge-downs (pick drop goals)
+  (cond
+   ((equal (null pick) (null drop)) goals)
+   ((null pick) (merge-downs pick (rest drop) (push `(person-aboard-wants ,(cadar pick)) goals)))
+   ((null drop) (merge-downs (rest pick) drop (push `(person-delivered-to ,(cadar drop)) goals)))
+   ((> (first (first pick)) (second (first drop))) (merge-downs (rest pick) drop (push `(person-delivered-to ,(cadar drop)) goals)))
+   (t ((merge-downs pick (rest drop) (push `(person-aboard-wants ,(cadar pick)) goals))))))
+
+(defun merge-lists (up-on up-off down-on down-off)
+  (if *upp*
+      (append (append (merge-ups up-on up-off '()) '((going-down))) (merge-downs down-on down-off '()))
+    (append (append (merge-downs down-on down-off '()) '((going-up))) (merge-ups up-on up-off '()))))
+;;;
+;;;
+;;;
+
 ;; getting person on at the current floor
 (defun make-get-on-op (floor-on floor-want)
   (op `(load-on ,floor-on) 
@@ -226,6 +257,8 @@
 (setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 5) (door-closed) (on 1) (person-on 16 wants 1) (going-up)))
 (fix-goals (cons parms '((blah blah))))
 ;;;((person-delivered-to 17) (person-delivered-to 1))))
+
+
 
 
 
