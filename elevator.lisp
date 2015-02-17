@@ -74,26 +74,27 @@
 ;;;
 (defun merge-ups (pick drop goals)
   (cond
-   ((equal (null pick) (null drop)) goals)
-   ((null pick) (merge-ups pick (rest drop) (push `(person-aboard-wants ,(cadar pick)) goals)))
-   ((null drop) (merge-ups (rest pick) drop (push `(person-delivered-to ,(cadar drop)) goals)))
-   ((< (first (first pick)) (second (first drop))) (merge-ups (rest pick) drop (push `(person-delivered-to ,(cadar drop)) goals)))
-   (t ((merge-ups pick (rest drop) (push `(person-aboard-wants ,(cadar pick)) goals))))))
-
+   ((and (null pick) (null drop)) (reverse goals))
+   ((null pick) (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))
+   ((null drop) (merge-ups (rest pick) drop (push `(person-aboard-wants ,(cadar pick)) goals)))
+   ((< (first (first pick)) (second (first drop))) (merge-ups (rest pick) drop (push `(person-aboard-wants ,(cadar pick)) goals)))
+   (t (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))))
+	
 (defun merge-downs (pick drop goals)
   (cond
-   ((equal (null pick) (null drop)) goals)
-   ((null pick) (merge-downs pick (rest drop) (push `(person-aboard-wants ,(cadar pick)) goals)))
-   ((null drop) (merge-downs (rest pick) drop (push `(person-delivered-to ,(cadar drop)) goals)))
-   ((> (first (first pick)) (second (first drop))) (merge-downs (rest pick) drop (push `(person-delivered-to ,(cadar drop)) goals)))
-   (t ((merge-downs pick (rest drop) (push `(person-aboard-wants ,(cadar pick)) goals))))))
+   ((and (null pick) (null drop)) (reverse goals))
+   ((null pick) (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))
+   ((null drop) (merge-downs (rest pick) drop (push `(person-aboard-wants ,(cadar pick)) goals)))
+   ((> (first (first pick)) (second (first drop))) (merge-downs (rest pick) drop (push `(person-aboard-wants ,(cadar pick)) goals)))
+   (t (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))))
+
 
 (defun merge-lists (up-on up-off down-on down-off)
   (if *upp*
       (append (append (merge-ups up-on up-off '()) '((going-down))) (merge-downs down-on down-off '()))
     (append (append (merge-downs down-on down-off '()) '((going-up))) (merge-ups up-on up-off '()))))
 ;;;
-;;;
+;;; end of merge list area
 ;;;
 
 ;; getting person on at the current floor
@@ -205,11 +206,13 @@
   (if (equal (car lst) 'person-on)
       (cons (second lst) (cons (fourth lst) nil))
     nil))
+
 (defun generate-goals (lstup-on lstup-off lstdown-on lstdown-off)
   (display lstup-on)
   (display lstup-off)
   (display lstdown-on)
   (display lstdown-off)
+  (display (merge-lists lstup-on lstup-off lstdown-on lstdown-off))
 )
 
 (defun fix-goals (lst) ;re-write goals base on pre conditions
