@@ -124,19 +124,28 @@
 )
 
 (defun sort-by-car-up (lst) ;; sort for going up
-  (sort (get-pickups lst) #'<)
+  (display 1)
+  
+  (sort lst (lambda (a b) (< (car a) (car b))))
 )
 
 (defun sort-by-car-down (lst) ;;sort for going down
-  (sort (get-pickups lst) #'>)
+  (display 2)
+  
+  (sort lst (lambda (a b) (> (car a) (car b))))
 )
 
 (defun sort-by-second-up (lst) ;; sort for going up
-  (sort (get-drop-offs lst) #'<)
+  (display 3)
+  
+
+  (sort lst (lambda (a b) (< (second a) (second b))))
 )
 
 (defun sort-by-second-down (lst) ;;sort for going down
-  (sort (get-drop-offs lst) #'>)
+  (display 4)
+  
+  (sort lst (lambda (a b) (> (second a) (second b))))
 )
 
 (defun get-ups (lst)
@@ -158,6 +167,10 @@
 )
       
 (defun get-floors (lst)
+  (cond 
+   ((equal (car lst) 'going-up) (setq *upp* t))
+   ((equal (car lst) 'going-down) (setq *upp* nil)))
+   
   (if (equal (car lst) 'person-on)
       (cons (second lst) (cons (fourth lst) nil))
     nil))
@@ -176,8 +189,10 @@
 	    (cond 
 	     ((not (equal part nil))(push part result))))))
 
-  (let ((ups (get-ups result)) (downs (get-downs result)))
-  (generate-goals (sort-by-car-up ups) (sort-by-second-up ups)(sort-by-car-down downs) (sort-by-second-down downs)))
+  ;(let ((ups (get-ups result)) (downs (get-downs result)))
+  (generate-goals (sort-by-car-up (get-ups result)) (sort-by-second-up (get-ups result)) (sort-by-car-down 
+(get-downs result)) (sort-by-second-down (get-downs result)))
+    ;(display (sort-by-car-up ups)))
 )
 ;(generate-best result )
 
@@ -223,9 +238,14 @@
 
 ;(display (get-ups '((1 5) (3 4) (5 7) (8 4))))
 
-(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 5) (door-closed) (on 1) (person-on 16 wants 1) (going-up)))
+(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 5) (door-closed) (on 1) (person-on 16 wants 1) (going-down)))
 (fix-goals (cons parms '((blah blah))))
-;;;((person-delivered-to 17) (person-delivered-to 1))))
+
+
+;(display (sort-by-car-up '((1 2) (3 4) (2 3))))
+;(display (sort-by-car-down '((1 2) (3 4) (2 3))))
+;(display (sort-by-second-up '((1 2) (3 4) (2 3))))
+;(display (sort-by-second-down '((1 2) (3 4) (2 3))))
 
 
 
