@@ -1,8 +1,15 @@
-;;; Zach Arnold
+;;; Zach Arnold and Casey Collins
 
 ;;; Elevator Simulation
 
 (requires "gps")
+
+;;; === GLOBALS ===
+
+(defparameter *elevatorOps* '()) ;; list of elevator ops
+(defparameter *floors* 20) ;; desired number of floors
+(defparameter *optimizedGoals* '()) ;; for pre-processing
+(defparameter *upp* t) ;;predicate for the direction
 
 ;;; ==== CODE FOR ELEVATOR SIMULATION ====
 
@@ -72,10 +79,6 @@
       :add-list `((person-delivered-to ,floor-want))
       :del-list `((person-aboard-wants ,floor-want))))
 
-
-(defparameter *elevatorOps* '()) ;; list of elevator ops
-(defparameter *floors* 20) ;; desired number of floors
-
 (make-elevator-ops *floors*) ;; b/w floors ops
 
 (make-on-ops *floors*) ;;pick up and ...
@@ -93,6 +96,90 @@
                :add-list '((door-closed))
 	       :del-list '((door-opened)))
       *elevatorOps*)
+
+;; toggle direction ops
+
+(push (op '(go-up)
+               :preconds '((going-down))
+               :add-list '((going-up))
+               :del-list '((going-down)))
+      *elevatorOps*)
+
+(push (op '(go-down)
+               :preconds '((going-up))
+               :add-list '((going-down))
+	       :del-list '((going-up)))
+      *elevatorOps*)
+
+;---------------PRE-PROCESSING FUNCTIONS -----------------------
+
+(defun get-pickups (lst)
+  (if (equal lst nil) '()
+    (cons (caar lst) (get-pickups (rest lst))))
+)
+
+(defun get-drop-offs (lst)
+  (if (equal lst nil) '()
+    (cons (second (first lst)) (get-drop-offs (rest lst))))
+)
+
+(defun sort-by-car-up (lst) ;; sort for going up
+  (sort (get-pickups lst) #'<)
+)
+
+(defun sort-by-car-down (lst) ;;sort for going down
+  (sort (get-pickups lst) #'>)
+)
+
+(defun sort-by-second-up (lst) ;; sort for going up
+  (sort (get-drop-offs lst) #'<)
+)
+
+(defun sort-by-second-down (lst) ;;sort for going down
+  (sort (get-drop-offs lst) #'>)
+)
+
+(defun get-ups (lst)
+  (if (equal lst nil) '()
+  (let ((tmp (first lst)))
+    (if (< (first tmp) (second tmp))
+	(cons tmp (get-ups (rest lst)))
+      (get-ups (rest lst))))))
+
+(defun get-downs (lst)
+  (if (equal lst nil) '()
+  (let ((tmp (first lst)))
+    (if (> (first tmp) (second tmp))
+	(cons tmp (get-downs (rest lst)))
+      (get-downs (rest lst))))))
+
+(defun construct-path (dir-lst) ;; given a list od goals in the same direction construct the goals
+  (sort-by-car)
+)
+      
+(defun get-floors (lst)
+  (if (equal (car lst) 'person-on)
+      (cons (second lst) (cons (fourth lst) nil))
+    nil))
+(defun generate-goals (lstup-on lstup-off lstdown-on lstdown-off)
+  (display lstup-on)
+  (display lstup-off)
+  (display lstdown-on)
+  (display lstdown-off)
+)
+
+(defun fix-goals (lst) ;re-write goals base on pre conditions
+  (setq result '())
+  (let ((temp (car lst)))
+    (loop for thing in temp do 
+	  (let ((part (get-floors thing)))
+	    (cond 
+	     ((not (equal part nil))(push part result))))))
+
+  (let ((ups (get-ups result)) (downs (get-downs result)))
+  (generate-goals (sort-by-car-up ups) (sort-by-second-up ups)(sort-by-car-down downs) (sort-by-second-down downs)))
+)
+;(generate-best result )
 
 ;; TESTING HARNESS -------------------------
 
@@ -119,46 +206,26 @@
 (spaces)
 (spaces)
 
-(display "Demonstrating examples of elevator simulation ...")
-(spaces)
-(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-(spaces)
-(display "Elevator traveling from floor to floor:")
-(setq parms `(((on 6)(door-closed)) ((on 1)(door-opened))))
-(test-fun 'gps parms)
-(print (gps  '((on 6)(door-closed)) '((on 1)(door-opened))  *elevatorOps*))
-(spaces)
-(spaces)
-(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-(spaces)
-(display "Elevator traveling from floor to floor and picking up a passenger:")
-(setq parms `(((person-on 3 wants 1)(door-closed)(on 6)) ((person-aboard-wants 1) (door-closed))))
-(test-fun 'gps parms)
-(print (gps '((person-on 3 wants 1)(door-closed)(on 6)) '((person-aboard-wants 1) (door-closed))  *elevatorOps*))
-(spaces)
-(spaces)
-(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-(spaces)
-(display "Elevator traveling from floor to floor, picking up a passenger and dropping them off:")
-(setq parms `(((person-on 1 wants 5) (door-closed) (on 2)) ((person-delivered-to 5))))
-(test-fun 'gps parms)
-(print (gps  '((person-on 1 wants 5) (door-closed) (on 2)) '((person-delivered-to 5)) *elevatorOps*))
-(spaces)
-(spaces)
-(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-(spaces)
-(display "Multiple passenger requests:")
-(setq parms `(((person-on 2 wants 17) (door-closed) (on 5) (person-on 16 wants 1)) 
-((person-delivered-to 17) (person-delivered-to 1))))
-(test-fun 'gps parms)
-(print (gps  '((person-on 2 wants 17) (door-closed) (on 5) (person-on 16 wants 1)) 
-'((person-delivered-to 17) (person-delivered-to 1)) *elevatorOps*))
-(spaces)
-(spaces)
-(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+;(display "Demonstrating examples of elevator simulation ...")
+;(spaces)
+;(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+;(spaces)
+;(display "Multiple passenger requests:")
+;;;;(setq parms `(((person-on 2 wants 17) (door-closed) (on 5) (person-on 16 wants 1))
+;;;((person-delivered-to 17) (person-delivered-to 1))))
+;(test-fun 'gps parms)
+;(print (gps  '( (door-closed) (on 5) (person-on 16 wants 1) (person-on 2 wants 17)) 
+;'( (person-delivered-to 1)(person-delivered-to 17)) *elevatorOps*))
+;(spaces)
+;(spaces)
+;(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+;(fix-goals parms)
 
+;(display (get-ups '((1 5) (3 4) (5 7) (8 4))))
 
-
+(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 5) (door-closed) (on 1) (person-on 16 wants 1) (going-up)))
+(fix-goals (cons parms '((blah blah))))
+;;;((person-delivered-to 17) (person-delivered-to 1))))
 
 
 
