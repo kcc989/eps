@@ -10,6 +10,7 @@
 (defparameter *floors* 19) ;; desired number of floors
 (defparameter *optimizedGoals* '()) ;; for pre-processing
 (defparameter *upp* t)
+(defparameter *startFloor* 0)
 
 
 ;;; ==== CODE FOR ELEVATOR SIMULATION ====
@@ -69,11 +70,33 @@
 ;; pickup `(person-aboard-wants ,floor)
 ;; drop off `(person-delivered-to ,floor)
 
+;;; Location Sensor 
+
+(defun get-direction (pair current)
+  "Return the direction of the request being considered will move the elevator"
+  (if (> 0 (- current (car pair)))
+      'up
+    'down))
+
+(defun direction-helper (closest direction floorlist current)
+  "Find the direction the elevator should currently be moving"
+  (cond 
+   ((null floorlist) direction)
+   ((< (abs (- current (caar floorlist))) (- current closest)) (direction-helper (caar floorlist) (get-direction (car floorlist) current) (cdr floorlist) current))
+   (t (direction-helper closest direction (cdr floorlist) current))))
+      
+
+(defun choose-direction (floorlist current)
+  "Calls the function that will determine the direction the elevator starts moving in"
+  (setq closest (caar floorlist))
+  (direction-helper closest (get-direction (car floorlist) current) (cdr floorlist) current))
+  
 
 ;;;
 ;;; CASEY's MERGE LISTS AREA!!!!!!!
 ;;;
 (defun merge-ups (pick drop goals)
+  "Merge the the elevator plan lists for the upward requests"
   (cond
    ((and (null pick) (null drop)) (reverse goals))
    ((null pick) (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))
@@ -82,6 +105,7 @@
    (t (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))))
 	
 (defun merge-downs (pick drop goals)
+  "Merge the elevator plan lists for downward requests"
   (cond
    ((and (null pick) (null drop)) (reverse goals))
    ((null pick) (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))
@@ -91,9 +115,8 @@
 
 
 (defun merge-lists (up-on up-off down-on down-off)
-  (if *upp*
-      ;(append (append (merge-ups up-on up-off '()) '((going-down))) (merge-downs down-on down-off '()))
-    ;(append (append (merge-downs down-on down-off '()) '((going-up))) (merge-ups up-on up-off '()))))
+  "Merge the elevator plans we preprocessed into one coherrent list of goals"
+  (if (equal 'up (choose-direction (append up-on down-on) *startFloor*))
      (append (merge-ups up-on up-off '()) (merge-downs down-on down-off '()))
  (append (merge-downs down-on down-off '()) (merge-ups up-on up-off '()))))
 ;;; end of merge list area
@@ -194,7 +217,7 @@
 )
       
 (defun get-floors (lst)
-   
+  (if (equal (car lst) 'on) (setf *startFloor* (second lst)))
   (if (equal (car lst) 'person-on)
       (cons (second lst) (cons (fourth lst) nil))
     nil))
