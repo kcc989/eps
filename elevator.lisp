@@ -56,16 +56,27 @@
 	      (if (not (= i j)) 
 		(make-on-ops-h i j)))))
 
+(defun make-off-ops (top) 
+  (loop for i in (reverse (range 1 (+ top 1))) do
+	(loop for j in (reverse (range 1 (+ 1 top))) do
+	      (if (not (= i j)) 
+		(make-off-ops-h i j)))))
+
+
 (defun make-on-ops-h (floor-on floor-want)
   (push (make-get-on-op floor-on floor-want) *elevatorOps*))
 
-;; make all combinations of off ops 
-(defun make-off-ops (top) 
-  (loop for i in (reverse (range 1 (+ top 1))) do
-	(make-off-ops-h i)))
 
-(defun make-off-ops-h (floor-want)
-  (push (make-get-off-op floor-want) *elevatorOps*))
+(defun make-off-ops-h (floor-on floor-want)
+  (push (make-get-off-op floor-on floor-want) *elevatorOps*))
+
+;; make all combinations of off ops 
+;(defun make-off-ops (top) 
+;  (loop for i in (reverse (range 1 (+ top 1))) do
+;	(make-off-ops-h i)))
+
+;(defun make-off-ops-h (floor-want)
+;  (push (make-get-off-op floor-want) *elevatorOps*))
 
 ;; pickup `(person-aboard-wants ,floor)
 ;; drop off `(person-delivered-to ,floor)
@@ -99,19 +110,19 @@
   "Merge the the elevator plan lists for the upward requests"
   (cond
    ((and (null pick) (null drop)) (reverse goals))
-   ((null pick) (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))
+   ((null pick) (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop) from ,(caar drop)) goals)))
    ((null drop) (merge-ups (rest pick) drop (push `(loaded-person-for ,(cadar pick) from ,(caar pick)) goals)))
    ((< (first (first pick)) (second (first drop))) (merge-ups (rest pick) drop (push `(loaded-person-for ,(cadar pick) from ,(caar pick)) goals)))
-   (t (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))))
+   (t (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop) from ,(caar drop)) goals)))))
 	
 (defun merge-downs (pick drop goals)
   "Merge the elevator plan lists for downward requests"
   (cond
    ((and (null pick) (null drop)) (reverse goals))
-   ((null pick) (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))
+   ((null pick) (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop) from ,(caar drop)) goals)))
    ((null drop) (merge-downs (rest pick) drop (push `(loaded-person-for ,(cadar pick) from ,(caar pick)) goals)))
    ((> (first (first pick)) (second (first drop))) (merge-downs (rest pick) drop (push `(loaded-person-for ,(cadar pick) from ,(caar pick)) goals)))
-   (t (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))))
+   (t (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop) from ,(caar drop)) goals)))))
 
 
 (defun merge-lists (up-on up-off down-on down-off)
@@ -130,10 +141,10 @@
       :del-list `((person-on ,floor-on wants ,floor-want))))
 
 ;; off loading person at current floor
-(defun make-get-off-op (floor-want)
+(defun make-get-off-op (floor-initial floor-want)
   (op `(drop-off-on ,floor-want) 
       :preconds `((door-opened)(on ,floor-want)(person-aboard-wants ,floor-want))
-      :add-list `((person-delivered-to ,floor-want))
+      :add-list `((person-delivered-to ,floor-want from ,floor-initial))
       :del-list `((person-aboard-wants ,floor-want))))
 
 (make-elevator-ops *floors*) ;; b/w floors ops
@@ -333,9 +344,10 @@
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 (spaces)
-(display "Demonstration of flaw:")
+(display "Demonstration of different direction drop off on same floor:")
 (test-fun 'eps parms)
 (display (eps parms))
+;(display (fix-goals (cons parms '((blah blah)))))
 (spaces)
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
