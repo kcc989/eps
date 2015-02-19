@@ -291,17 +291,31 @@
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-(setq parms `((person-on 16 wants 1)(person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 6) (door-closed) (on 19)))
+(setq parms `((person-on 16 wants 1)(person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 17 wants 6) (door-closed) (on 15)))
 
 (display "Demonstarting logic for best start direction")
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 (spaces)
-(display "Demonstration 1:")
+(display "Demonstration of logic to start in the right direction:")
 (test-fun 'eps parms)
 (display (eps parms))
 (spaces)
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+(setq parms `((person-on 2 wants 5) (person-on 4 wants 5) (person-on 5 wants 7)(on 15)))
+
+(display "Demonstarting logic for best start direction")
+(spaces)
+(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+(spaces)
+(display "Demonstration of logic to start in the right direction:")
+(test-fun 'eps parms)
+(display (eps parms))
+(spaces)
+(spaces)
+(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
 
 
