@@ -163,41 +163,39 @@
 
 ;---------------PRE-PROCESSING FUNCTIONS -----------------------
 
+;;; get all the pickup locations
 (defun get-pickups (lst)
   (if (equal lst nil) '()
     (cons (caar lst) (get-pickups (rest lst))))
 )
 
+;;; get all the drop off locations
 (defun get-drop-offs (lst)
   (if (equal lst nil) '()
     (cons (second (first lst)) (get-drop-offs (rest lst))))
 )
 
-(defun sort-by-car-up (lst) ;; sort for going up
-  (display 1)
-  
+;;; sort by the first item in list for the down list
+(defun sort-by-car-up (lst) 
   (sort lst (lambda (a b) (< (car a) (car b))))
 )
-
-(defun sort-by-car-down (lst) ;;sort for going down
-  (display 2)
-  
+;;; sort by the first item in list for the down list
+(defun sort-by-car-down (lst) 
   (sort lst (lambda (a b) (> (car a) (car b))))
 )
 
-(defun sort-by-second-up (lst) ;; sort for going up
-  (display 3)
-  
-
+;;; sort by second item in list for the up list
+(defun sort-by-second-up (lst) 
   (sort lst (lambda (a b) (< (second a) (second b))))
 )
 
-(defun sort-by-second-down (lst) ;;sort for going down
-  (display 4)
-  
+;;; sort by second item in list for the down list
+(defun sort-by-second-down (lst) 
   (sort lst (lambda (a b) (> (second a) (second b))))
 )
 
+;;; given an assosciation list this returns only the assosciations that 
+;;; are going up
 (defun get-ups (lst)
   (if (equal lst nil) '()
   (let ((tmp (first lst)))
@@ -205,6 +203,8 @@
 	(cons tmp (get-ups (rest lst)))
       (get-ups (rest lst))))))
 
+;;; given an assosciation list this returns only the assosciations that 
+;;; are going down
 (defun get-downs (lst)
   (if (equal lst nil) '()
   (let ((tmp (first lst)))
@@ -212,25 +212,31 @@
 	(cons tmp (get-downs (rest lst)))
       (get-downs (rest lst))))))
 
-(defun construct-path (dir-lst) ;; given a list od goals in the same direction construct the goals
+;; given a list of goals in the same direction construct the goals for eps
+(defun construct-path (dir-lst) 
   (sort-by-car)
 )
-      
+
+;;; This function collects all the floor requests and
+;;; where they would like to go and puts them into an 
+;;; assosciation list
 (defun get-floors (lst)
   (if (equal (car lst) 'on) (setf *startFloor* (second lst)))
   (if (equal (car lst) 'person-on)
       (cons (second lst) (cons (fourth lst) nil))
     nil))
 
+
+;;; This is just a helper function that calls the function where the 
+;;; actual merging happens
+
 (defun generate-goals (lstup-on lstup-off lstdown-on lstdown-off)
-  (display lstup-on)
-  (display lstup-off)
-  (display lstdown-on)
-  (display lstdown-off)
   (merge-lists lstup-on lstup-off lstdown-on lstdown-off)
 )
 
-(defun fix-goals (lst) ;re-write goals base on pre conditions
+;;; This function will determine the best goals to use in conjunction
+;;; with gps. It will also determine the best direction
+(defun fix-goals (lst) 
   (setq result '())
   (let ((temp (car lst)))
     (loop for thing in temp do 
@@ -238,9 +244,14 @@
 	    (cond 
 	     ((not (equal part nil))(push part result))))))
 
-(list (car lst)
+  (list (car lst)
   (generate-goals (sort-by-car-up (get-ups result)) (sort-by-second-up (get-ups result)) (sort-by-car-down 
-(get-downs result)) (sort-by-second-down (get-downs result)))))
+  (get-downs result)) (sort-by-second-down (get-downs result)))))
+
+(defun eps (parms) 
+  (let ((x (fix-goals (cons parms '((blah blah))))))
+    (gps (first x) (second x) *elevatorOps*)))
+
 
 ;; TESTING HARNESS -------------------------
 
@@ -267,42 +278,18 @@
 (spaces)
 (spaces)
 
-;(display "Demonstrating examples of elevator simulation ...")
-;(spaces)
-;(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-;(spaces)
-;(display "Multiple passenger requests:")
-;;;;(setq parms `(((person-on 2 wants 17) (door-closed) (on 5) (person-on 16 wants 1))
-;;;((person-delivered-to 17) (person-delivered-to 1))))
-;(test-fun 'gps parms)
-;(print (gps  '( (door-closed) (on 5) (person-on 16 wants 1) (person-on 2 wants 17)) 
-;'( (person-delivered-to 1)(person-delivered-to 17)) *elevatorOps*))
-;(spaces)
-;(spaces)
-;(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-;(fix-goals parms)
-
-;(display (get-ups '((1 5) (3 4) (5 7) (8 4))))
-
 (setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 6) (door-closed) (on 1) (person-on 16 wants 1)))
 
-;(debug2 :gps)
-
-
-;(print (gps '((person-on 3 wants 1) (person-on 5 wants 2)(door-closed)(on 6)) '((person-aboard-wants 2)(person-aboard-wants 1)(person-delivered-to 2)(door-closed))  *elevatorOps*))
-(let ((x (fix-goals (cons parms '((blah blah))))))
-(display (gps (first x) (second x) *elevatorOps*)))
-
-
-
-
-;(display (sort-by-car-up '((1 2) (3 4) (2 3))))
-;(display (sort-by-car-down '((1 2) (3 4) (2 3))))
-;(display (sort-by-second-up '((1 2) (3 4) (2 3))))
-;(display (sort-by-second-down '((1 2) (3 4) (2 3))))
-
-
-
+(display "Demonstrating examples of elevator simulation ...")
+(spaces)
+(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+(spaces)
+(display "Demonstration 1:")
+(test-fun 'eps parms)
+(display (eps parms))
+(spaces)
+(spaces)
+(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 
 
