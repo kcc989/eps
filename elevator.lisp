@@ -100,8 +100,8 @@
   (cond
    ((and (null pick) (null drop)) (reverse goals))
    ((null pick) (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))
-   ((null drop) (merge-ups (rest pick) drop (push `(loaded-person-for ,(cadar pick)) goals)))
-   ((< (first (first pick)) (second (first drop))) (merge-ups (rest pick) drop (push `(loaded-person-for ,(cadar pick)) goals)))
+   ((null drop) (merge-ups (rest pick) drop (push `(loaded-person-for ,(cadar pick) from ,(caar pick)) goals)))
+   ((< (first (first pick)) (second (first drop))) (merge-ups (rest pick) drop (push `(loaded-person-for ,(cadar pick) from ,(caar pick)) goals)))
    (t (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))))
 	
 (defun merge-downs (pick drop goals)
@@ -109,8 +109,8 @@
   (cond
    ((and (null pick) (null drop)) (reverse goals))
    ((null pick) (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))
-   ((null drop) (merge-downs (rest pick) drop (push `(loaded-person-for ,(cadar pick)) goals)))
-   ((> (first (first pick)) (second (first drop))) (merge-downs (rest pick) drop (push `(loaded-person-for ,(cadar pick)) goals)))
+   ((null drop) (merge-downs (rest pick) drop (push `(loaded-person-for ,(cadar pick) from ,(caar pick)) goals)))
+   ((> (first (first pick)) (second (first drop))) (merge-downs (rest pick) drop (push `(loaded-person-for ,(cadar pick) from ,(caar pick)) goals)))
    (t (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))))
 
 
@@ -126,7 +126,7 @@
 (defun make-get-on-op (floor-on floor-want)
   (op `(load-on ,floor-on) 
       :preconds `((door-opened)(on ,floor-on)(person-on ,floor-on wants ,floor-want))
-      :add-list `((person-aboard-wants ,floor-want)(loaded-person-for ,floor-want))
+      :add-list `((person-aboard-wants ,floor-want)(loaded-person-for ,floor-want from ,floor-on))
       :del-list `((person-on ,floor-on wants ,floor-want))))
 
 ;; off loading person at current floor
@@ -293,7 +293,6 @@
 
 (setq parms `((person-on 16 wants 1)(person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 17 wants 6) (door-closed) (on 15)))
 
-(display "Demonstarting logic for best start direction")
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 (spaces)
@@ -306,31 +305,39 @@
 
 (setq parms `((door-closed)(person-on 2 wants 5) (person-on 1 wants 5)(person-on 6 wants 7)(on 15)))
 
-(display "Demonstarting logic for best start direction")
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 (spaces)
-(display "Demonstration of logic to start in the right direction:")
+(display "Demonstration of same floor drop off:")
 (test-fun 'eps parms)
-;(display (eps parms))
-(display (fix-goals (cons parms '((blah blah)))))
+(display (eps parms))
 (spaces)
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 (setq parms `((door-closed)(person-on 2 wants 5) (person-on 2 wants 4)(person-on 6 wants 7)(on 15)))
 
-(display "Demonstarting logic for best start direction")
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 (spaces)
-(display "Demonstration of logic to start in the right direction:")
+(display "Demonstration of same floor pickup:")
 (test-fun 'eps parms)
 (display (eps parms))
-;(display (fix-goals (cons parms '((blah blah)))))
 (spaces)
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
+
+(setq parms `((door-closed)(person-on 2 wants 3)(person-on 6 wants 3)(on 1)))
+
+(spaces)
+(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+(spaces)
+(display "Demonstration of flaw:")
+(test-fun 'eps parms)
+(display (eps parms))
+(spaces)
+(spaces)
+(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 
