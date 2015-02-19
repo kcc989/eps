@@ -77,24 +77,25 @@
   (cond
    ((and (null pick) (null drop)) (reverse goals))
    ((null pick) (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))
-   ((null drop) (merge-ups (rest pick) drop (push `(person-aboard-wants ,(cadar pick)) goals)))
-   ((< (first (first pick)) (second (first drop))) (merge-ups (rest pick) drop (push `(person-aboard-wants ,(cadar pick)) goals)))
+   ((null drop) (merge-ups (rest pick) drop (push `(loaded-person-for ,(cadar pick)) goals)))
+   ((< (first (first pick)) (second (first drop))) (merge-ups (rest pick) drop (push `(loaded-person-for ,(cadar pick)) goals)))
    (t (merge-ups pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))))
 	
 (defun merge-downs (pick drop goals)
   (cond
    ((and (null pick) (null drop)) (reverse goals))
    ((null pick) (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))
-   ((null drop) (merge-downs (rest pick) drop (push `(person-aboard-wants ,(cadar pick)) goals)))
-   ((> (first (first pick)) (second (first drop))) (merge-downs (rest pick) drop (push `(person-aboard-wants ,(cadar pick)) goals)))
+   ((null drop) (merge-downs (rest pick) drop (push `(loaded-person-for ,(cadar pick)) goals)))
+   ((> (first (first pick)) (second (first drop))) (merge-downs (rest pick) drop (push `(loaded-person-for ,(cadar pick)) goals)))
    (t (merge-downs pick (rest drop) (push `(person-delivered-to ,(cadar drop)) goals)))))
 
 
 (defun merge-lists (up-on up-off down-on down-off)
   (if *upp*
-      (append (append (merge-ups up-on up-off '()) '((going-down))) (merge-downs down-on down-off '()))
-    (append (append (merge-downs down-on down-off '()) '((going-up))) (merge-ups up-on up-off '()))))
-;;;
+      ;(append (append (merge-ups up-on up-off '()) '((going-down))) (merge-downs down-on down-off '()))
+    ;(append (append (merge-downs down-on down-off '()) '((going-up))) (merge-ups up-on up-off '()))))
+     (append (merge-ups up-on up-off '()) (merge-downs down-on down-off '()))
+ (append (merge-downs down-on down-off '()) (merge-ups up-on up-off '()))))
 ;;; end of merge list area
 ;;;
 
@@ -102,7 +103,7 @@
 (defun make-get-on-op (floor-on floor-want)
   (op `(load-on ,floor-on) 
       :preconds `((door-opened)(on ,floor-on)(person-on ,floor-on wants ,floor-want))
-      :add-list `((person-aboard-wants ,floor-want))
+      :add-list `((person-aboard-wants ,floor-want)(loaded-person-for ,floor-want))
       :del-list `((person-on ,floor-on wants ,floor-want))))
 
 ;; off loading person at current floor
@@ -124,11 +125,16 @@
                :del-list '((door-closed)))
       *elevatorOps*)
 
+
 (push (op '(close-door)
                :preconds '((door-opened))
-               :add-list '((door-closed))
+	       :add-list '((door-closed))
 	       :del-list '((door-opened)))
       *elevatorOps*)
+
+
+
+
 
 ;; toggle direction ops
 
@@ -255,14 +261,13 @@
 
 ;(display (get-ups '((1 5) (3 4) (5 7) (8 4))))
 
-(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 5) (door-closed) (on 1) (person-on 16 wants 1)))
+(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 6) (door-closed) (on 1) (person-on 16 wants 1)))
 
-(debug2 :gps)
+;(debug2 :gps)
 
 
 ;(print (gps '((person-on 3 wants 1) (person-on 5 wants 2)(door-closed)(on 6)) '((person-aboard-wants 2)(person-aboard-wants 1)(person-delivered-to 2)(door-closed))  *elevatorOps*))
 (let ((x (fix-goals (cons parms '((blah blah))))))
-(display x)
 (display (gps (first x) (second x) *elevatorOps*)))
 
 
