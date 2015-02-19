@@ -9,7 +9,7 @@
 (defparameter *elevatorOps* '()) ;; list of elevator ops
 (defparameter *floors* 19) ;; desired number of floors
 (defparameter *optimizedGoals* '()) ;; for pre-processing
-(defparameter *upp* t)
+;(defparameter *upp* t)
 (defparameter *startFloor* 0)
 
 
@@ -281,6 +281,19 @@
 (setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 6) (door-closed) (on 1) (person-on 16 wants 1)))
 
 (display "Demonstrating examples of elevator simulation ...")
+(spaces)
+(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+(spaces)
+(display "Demonstrating correct traversal")
+(test-fun 'eps parms)
+(display (eps parms))
+(spaces)
+(spaces)
+(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 6) (door-closed) (on 15) (person-on 16 wants 1)))
+
+(display "Demonstarting logic for best start direction")
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 (spaces)
