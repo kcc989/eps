@@ -74,7 +74,7 @@
 
 (defun get-direction (pair current)
   "Return the direction of the request being considered will move the elevator"
-  (if (> 0 (- current (car pair)))
+  (if (< (- (first pair) (second pair)) 0)
       'up
     'down))
 
