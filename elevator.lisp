@@ -291,7 +291,7 @@
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-(setq parms `((person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 6) (door-closed) (on 15) (person-on 16 wants 1)))
+(setq parms `((person-on 16 wants 1)(person-on 2 wants 17) (person-on 4 wants 5) (person-on 3 wants 19) (person-on 7 wants 6) (door-closed) (on 19)))
 
 (display "Demonstarting logic for best start direction")
 (spaces)
@@ -303,6 +303,5 @@
 (spaces)
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-
 
 
