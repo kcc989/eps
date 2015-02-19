@@ -318,6 +318,19 @@
 (spaces)
 (display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
+(setq parms `((door-closed)(person-on 2 wants 5) (person-on 2 wants 4)(person-on 6 wants 7)(on 15)))
+
+(display "Demonstarting logic for best start direction")
+(spaces)
+(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+(spaces)
+(display "Demonstration of logic to start in the right direction:")
+(test-fun 'eps parms)
+(display (eps parms))
+;(display (fix-goals (cons parms '((blah blah)))))
+(spaces)
+(spaces)
+(display "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 
 
